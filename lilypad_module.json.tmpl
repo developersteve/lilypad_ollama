@@ -1,8 +1,8 @@
 {
   "machine": {
     "gpu": 1,
-    "cpu": 1000,
-    "ram": 12000
+    "cpu": 4000,
+    "ram": 16000
   },
   "job": {
     "APIVersion": "V1beta1",
@@ -10,35 +10,36 @@
       "Deal": {
         "Concurrency": 1
       },
-      "Docker": {},
-      "EngineSpec": {
+      "Docker": {
         "Entrypoint": [
           "/bin/sh",
           "-c",
-          "docker run -d -v ollama:/root/.ollama -p 11434:11434 --name ollama ollama/ollama && docker exec -it ollama ollama run llama3"
+          "curl -fsSL https://nvidia.github.io/libnvidia-container/gpgkey | gpg --dearmor -o /usr/share/keyrings/nvidia-container-toolkit-keyring.gpg && \
+          curl -s -L https://nvidia.github.io/libnvidia-container/stable/deb/nvidia-container-toolkit.list | sed 's#deb https://#deb [signed-by=/usr/share/keyrings/nvidia-container-toolkit-keyring.gpg] https://#g' | tee /etc/apt/sources.list.d/nvidia-container-toolkit.list && \
+          apt-get update && apt-get install -y nvidia-container-toolkit && \
+          nvidia-ctk runtime configure --runtime=docker && systemctl restart docker && \
+          docker run -d --gpus=all -v ollama:/root/.ollama -p 11434:11434 --name ollama ollama/ollama && \
+          docker exec -it ollama ollama run llama3"
         ],
         "EnvironmentVariables": [
-          {{ if .Message }}"{{ subst "MESSAGE=%s" .Message }}"{{else}}"Message=Hello World"{{ end }}
+          "CUDA_VERSION=11.3.1",
+          "ROCM_VERSION=6.0.2",
+          "GOLANG_VERSION=1.22.1",
+          "CMAKE_VERSION=3.22.1"
         ],
-        "Image": "ollama/ollama:0.1.38@sha256:b8d92f13d444a590ad0708e7676efacc625ae20068c0bc522e307aefc6b38112"
+        "Image": "ubuntu:22.04"
       },
       "Engine": "Docker",
       "Network": {
         "Type": "None"
       },
-      "Outputs": [
-          {
-          "Name": "outputs",
-          "Path": "/outputs"
-          }
-      ],
       "PublisherSpec": {
         "Type": "IPFS"
       },
       "Resources": {
-        "GPU": "1"
+        "GPU": "all"
       },
-      "Timeout": 1800,
+      "Timeout": 3600,
       "Verifier": "Noop"
     }
   }
