@@ -1,0 +1,45 @@
+{
+  "machine": {
+    "gpu": 1,
+    "cpu": 1000,
+    "ram": 12000
+  },
+  "job": {
+    "APIVersion": "V1beta1",
+    "Spec": {
+      "Deal": {
+        "Concurrency": 1
+      },
+      "Docker": {},
+      "EngineSpec": {
+        "Entrypoint": [
+          "/bin/sh",
+          "-c",
+          "docker run -d -v ollama:/root/.ollama -p 11434:11434 --name ollama ollama/ollama && docker exec -it ollama ollama run llama3"
+        ],
+        "EnvironmentVariables": [
+          {{ if .Message }}"{{ subst "MESSAGE=%s" .Message }}"{{else}}"Message=Hello World"{{ end }}
+        ],
+        "Image": "ollama/ollama:0.1.38@sha256:b8d92f13d444a590ad0708e7676efacc625ae20068c0bc522e307aefc6b38112"
+      },
+      "Engine": "Docker",
+      "Network": {
+        "Type": "None"
+      },
+      "Outputs": [
+          {
+          "Name": "outputs",
+          "Path": "/outputs"
+          }
+      ],
+      "PublisherSpec": {
+        "Type": "IPFS"
+      },
+      "Resources": {
+        "GPU": "1"
+      },
+      "Timeout": 1800,
+      "Verifier": "Noop"
+    }
+  }
+}
